@@ -1,1 +1,8 @@
 Dit is de totaal code voor het UAV project
+
+De code beschikt over:
+- een startknop
+- een noodstop
+- blower functie
+- werking van 3 Tof sensoren teglijkertijd
+- pwm signaal voor motoren >> zonder Hbridge
