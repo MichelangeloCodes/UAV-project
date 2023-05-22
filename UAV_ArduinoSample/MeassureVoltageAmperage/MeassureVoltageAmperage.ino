@@ -1,12 +1,7 @@
-//#include <avr/io.h>
-//#include <avr/intterupt.h>
-
-//volatile unsigned long millisCounter = 0;
-
 int serialAllowmend = 1;
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
   setupTimer();
 }
 
@@ -15,6 +10,7 @@ void setup() {
 void loop() {
   MeassureBatteryVoltage();
   MeassureAmperage();
+  delay(500);
 }
 
 
@@ -43,10 +39,10 @@ void setupTimer() {
 ISR(TIMER1_COMPA_vect) {
   int currentThreshold = 7;
   int trigger = MeassureAmperage();
+
   if (trigger >= currentThreshold) {
     ERROR(1);
   }
-  //millisCounter += 100;
 }
 
 
@@ -54,20 +50,30 @@ void MeassureBatteryVoltage() {
   #define VoltageThreshold 3
   int value_1, value_2, value_3 = 0;
   float VoltageCell_1, VoltageCell_2, VoltageCell_3;
-  int R1 = 1000;
-  int R2 = 1000;
+  int weerstandSerieCel1 = 3000;  //R1 + R2 + R3
+  int weerstandSerieCel2 = 2000;  //R1 +R2
+  int weerstandSerieCel3 = 220;   //R3
+  int R1, R2 = 1000;
+  int R3 = 220;
 
   value_1 = analogRead(A0);
-  VoltageCell_1 = value_1 * (5.0 / 1024) * ((R1 + R2) / R2);
+  VoltageCell_1 = value_1 * (5.0 / 1024) * ((weerstandSerieCel1) / R2);
   value_2 = analogRead(A1);
-  VoltageCell_2 = value_2 * (5.0 / 1024) * ((R1 + R2) / R2);
+  VoltageCell_2 = value_2 * (5.0 / 1024) * ((weerstandSerieCel2) / R2);
   value_3 = analogRead(A2);
-  VoltageCell_3 = value_3 * (5.0 / 1024) * ((R1 + R2) / R2);
+  VoltageCell_3 = value_3 * (5.0 / 1024) * ((weerstandSerieCel3) / R3); 
 
   if(serialAllowmend){
-    char buffer[40];
-    sprintf(buffer, "Baterij voltage - Cel1: %dV \t Cel2: %dV \t Cel3: %dV \t", VoltageCell_1, VoltageCell_2, VoltageCell_3);
-    Serial.println(buffer);
+    // char buffer[40];
+    // sprintf(buffer, "Baterij voltage - Cel1: %dV \t Cel2: %dV \t Cel3: %dV \t", VoltageCell_1, VoltageCell_2, VoltageCell_3);
+    // Serial.println(buffer);
+    
+    Serial.println("\n\nCEL 1:");
+    Serial.println(VoltageCell_1);
+    Serial.println("CEL 2:");
+    Serial.println(VoltageCell_2);
+    Serial.println("CEL 3:");
+    Serial.println(VoltageCell_3);
   }
 
   if (VoltageCell_1 <= VoltageThreshold || VoltageCell_2 <= VoltageThreshold || VoltageCell_3 <= VoltageThreshold) {
@@ -80,15 +86,14 @@ int MeassureAmperage() {
   #define NoLoadOuput 2.5  //Volt
   #define sensitivity 0.66
   int adc = analogRead(A3);
-  float voltage = adc * 5 / 1023.0;
-  float current = (voltage - NoLoadOuput) / sensitivity;
+  float voltage = adc * 5 / 1024.0;
+  float current = (voltage - NoLoadOuput) / sensitivity * 10;
 
   if(serialAllowmend)
   {
     Serial.println("Current: ");
     Serial.println(current);
   }
-
   return current;
 }
 
