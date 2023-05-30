@@ -6,23 +6,20 @@
 #define LOX1_ADDRESS 0x30
 #define LOX2_ADDRESS 0x31
 
-int sensor1,sensor2,sensor3;
+int sensor1,sensor2;
 
 
 // set the pins to shutdown
 #define SHT_LOX1 7
 #define SHT_LOX2 6
-#define SHT_LOX3 5
 
 // objects for the vl53l0x
 Adafruit_VL53L0X lox1 = Adafruit_VL53L0X();
 Adafruit_VL53L0X lox2 = Adafruit_VL53L0X();
-Adafruit_VL53L0X lox3 = Adafruit_VL53L0X();
 
 // this holds the measurement
 VL53L0X_RangingMeasurementData_t measure1;
 VL53L0X_RangingMeasurementData_t measure2;
-VL53L0X_RangingMeasurementData_t measure3;
 
 
 
@@ -30,18 +27,17 @@ void setID() {
   // all reset
   digitalWrite(SHT_LOX1, LOW);    
   digitalWrite(SHT_LOX2, LOW);
-  digitalWrite(SHT_LOX3, LOW);
+
   delay(10);
   // all unreset
   digitalWrite(SHT_LOX1, HIGH);
   digitalWrite(SHT_LOX2, HIGH);
-  digitalWrite(SHT_LOX3, HIGH);
   delay(10);
 
   // activating LOX1 and reseting LOX2
   digitalWrite(SHT_LOX1, HIGH);
   digitalWrite(SHT_LOX2, LOW);
-  digitalWrite(SHT_LOX3, LOW);
+
 
   // initing LOX1
   if(!lox1.begin(LOX1_ADDRESS)) {
@@ -60,16 +56,6 @@ void setID() {
     while(1);
   }
   delay(10);
-
-  // activating LOX3
-  digitalWrite(SHT_LOX3, HIGH);
-  delay(10);
-
-  //initing LOX3
-  if(!lox3.begin(LOX3_ADDRESS)) {
-    Serial.println(F("Failed to boot third VL53L0X"));
-    while(1);
-  }
 }
 
 
@@ -89,7 +75,7 @@ void read_dual_sensors() {
     Serial.print("Out of range");
   }
   
-  Serial.print(" ");
+  Serial.print(" \t ");
 
   // print sensor two reading
   Serial.print("2: ");
@@ -101,7 +87,14 @@ void read_dual_sensors() {
     Serial.print("Out of range");
   }
   
-  Serial.println();
+  Serial.print(" \t ");
+
+  const int sensorsApartFromEachother = 75;   //mm
+  int distanceDiff = sensor1 - sensor2;
+  float radian = atan2(distanceDiff, sensorsApartFromEachother);
+  float angle = radian * 180/3.14159265;
+  Serial.println(angle);
+
 }
 
 
